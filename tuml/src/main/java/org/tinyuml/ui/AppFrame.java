@@ -30,13 +30,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
-
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -47,9 +44,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
-
 import org.tinyuml.draw.Label;
-import org.tinyuml.draw.DiagramElement;
 import org.tinyuml.draw.LabelChangeListener;
 import org.tinyuml.model.UmlModel;
 import org.tinyuml.util.AppCommandListener;
@@ -91,13 +86,6 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
   private transient Map<String, MethodCall> selectorMap =
     new HashMap<String, MethodCall>();
 
-  // Solitud D: Se necesita llevar cuenta de todos los DiagramEditor presentes
-  // para cada tab. Lo haremos con LinkedList
-  private LinkedList<DiagramEditor> diagramEditors;
-  
-  // Solicitud E: Variable de instancia que lleve cuenta de los elementos
-  // que fueron copiados.
-  private Collection<DiagramElement> lastCopiedElements;
 
   /**
    * Reset the transient values for serialization.
@@ -121,12 +109,6 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
    * Creates a new instance of AppFrame.
    */
   public AppFrame() {
-	// Solicitud D: debemos inicializar la lista enlazada de DiagramEditor
-	diagramEditors = new LinkedList<DiagramEditor>();
-	
-	// Solicitud E: al principio no existen elementos copiados.
-	lastCopiedElements = null;
-	  
     setTitle(getResourceString("application.title"));
     setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
     editorDispatcher = new EditorCommandDispatcher(this);
@@ -157,22 +139,7 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
    * @return the current editor
    */
   public DiagramEditor getCurrentEditor() {
-	// cambio Solicitud D: Pedimos el índice del nuevo tab
-	// y obtenemos el editor actual desde nuestra lista enlazada
-	// con el índice entregado
-	
-	int currentTabIndex = tabbedPane.getSelectedIndex();
-	
-    return diagramEditors.get(currentTabIndex);
-  }
-  
-  /**
-   * Returns the last collection of items ready to copy.
-   * Implementado para cumplir con la solicitud E de la tarea.
-   * @return Collection of items ready to copy
-   */
-  public Collection<DiagramElement> getElementsToCopy(){
-	  return lastCopiedElements;
+    return currentEditor;
   }
 
   /**
@@ -205,11 +172,6 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
     currentEditor.addAppCommandListener(editorDispatcher);
     currentEditor.addAppCommandListener(this);
     JScrollPane spane = new JScrollPane(currentEditor);
-    
-    // Solicitud D: debemos llevar la cuenta de todos los DiagramEditor
-    // en nuestra LinkedList (variable de I. diagramEditors)
-    diagramEditors.add(currentEditor);
-    
     JPanel editorPanel = new JPanel(new BorderLayout());
     spane.getVerticalScrollBar().setUnitIncrement(10);
     spane.getHorizontalScrollBar().setUnitIncrement(10);
@@ -219,7 +181,6 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
     editorPanel.add(spane, BorderLayout.CENTER);
     editorPanel.add(toolbar, BorderLayout.NORTH);
     final Component comp = tabbedPane.add(diagram.getLabelText(), editorPanel);
-    tabbedPane.setSelectedIndex(diagramEditors.size()-1);
     diagram.addNameLabelChangeListener(new LabelChangeListener() {
       /** {@inheritDoc} */
       public void labelTextChanged(Label label) {
@@ -328,18 +289,15 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
    */
   public void selectionStateChanged() {
     boolean hasSelection = getCurrentEditor().getSelectedElements().size() > 0;
-    
-    // Solicitud E: Veremos qué pasa si habilitamos los Items del menú
-    // aunque no tengan ningún comando asociado.
-    
+    /*
     menumanager.enableMenuItem("CUT", hasSelection);
     menumanager.enableMenuItem("COPY", hasSelection);
-    
+     */
     menumanager.enableMenuItem("DELETE", hasSelection);
-    
+    /*
     toolbarmanager.enableButton("CUT", hasSelection);
     toolbarmanager.enableButton("COPY", hasSelection);
-    
+     */
     toolbarmanager.enableButton("DELETE", hasSelection);
   }
 
@@ -362,19 +320,8 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
         getClass().getMethod("save")));
       selectorMap.put("EXPORT_GFX", new MethodCall(
         getClass().getMethod("exportGfx")));
-      
-      // Solicitud E: Para implementar cut, copy y paste hay que
-      // tener listeners!
-      selectorMap.put("CUT", new MethodCall(
-    	getClass().getMethod("cut")));
-      selectorMap.put("COPY", new MethodCall(
-    	getClass().getMethod("copy")));
-      selectorMap.put("PASTE", new MethodCall(
-        getClass().getMethod("paste")));
-      
-      
       selectorMap.put("DELETE", new MethodCall(
-    	getClass().getMethod("delete")));
+        getClass().getMethod("delete")));
       selectorMap.put("EDIT_SETTINGS", new MethodCall(
         getClass().getMethod("editSettings")));
       selectorMap.put("QUIT", new MethodCall(
@@ -437,18 +384,14 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
    * Creates a new model.
    */
   public void newModel() {
-	// Solicitud D: No se requiere preguntar si se puede crear nuevo modelo
-	// Sólo debemos preguntar al cerrar los tabs (TODO?)
-    umlModel = new UmlModelImpl();
-    StructureDiagram diagram = new StructureDiagram(umlModel);
-    umlModel.addDiagram(diagram);
-    diagram.setLabelText("Class diagram 1");
-    
-    // Cambio Solicitud D: Veremos qué pasa si no removemos todo y en vez de eso
-    // solo agregamos un nuevo Tab
-  
-    /* tabbedPane.removeAll(); */
-    createEditor(diagram);
+    if (canCreateNewModel()) {
+      umlModel = new UmlModelImpl();
+      StructureDiagram diagram = new StructureDiagram(umlModel);
+      umlModel.addDiagram(diagram);
+      diagram.setLabelText("Class diagram 1");
+      tabbedPane.removeAll();
+      createEditor(diagram);
+    }
   }
 
   /**
@@ -456,7 +399,6 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
    * @return true the model can be created, false otherwise
    */
   private boolean canCreateNewModel() {
-	//TODO: Puede ser que no se necesite más el método canCreateNewModel
     if (currentEditor != null && currentEditor.canUndo()) {
       return JOptionPane.showConfirmDialog(this,
         ApplicationResources.getInstance().getString("confirm.new.message"),
@@ -545,7 +487,7 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
    * Opens a TinyUML model.
    */
   public void openModel() {
-    //if (canOpen()) {
+    if (canOpen()) {
       JFileChooser fileChooser = new JFileChooser();
       fileChooser.setDialogTitle(getResourceString("dialog.openmodel.title"));
       fileChooser.addChoosableFileFilter(createModelFileFilter());
@@ -553,7 +495,7 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
         try {
           currentFile = fileChooser.getSelectedFile();
           umlModel = ModelReader.getInstance().readModel(currentFile);
-          //tabbedPane.removeAll();
+          tabbedPane.removeAll();
           createEditor((StructureDiagram) umlModel.getDiagrams().get(0));
           updateFrameTitle();
         } catch (IOException ex) {
@@ -562,7 +504,7 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
             JOptionPane.ERROR_MESSAGE);
         }
       }
-    //}
+    }
   }
 
   /**
@@ -634,46 +576,6 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
       setTitle(ApplicationResources.getInstance()
         .getString("application.title"));
     }
-  }
-  
-  /**
-   * Performs the action of Cutting an element from the diagram.
-   * This means it will save the current selected elements and
-   * delete them from the current diagram.
-   * 
-   * Hecho para la solicitud E de la tarea.
-   */
-  public void cut(){
-	  copy();
-	  delete();
-	  
-	  // Note que después de efectuar ésta acción el focus desaparece
-	  // por lo tanto hay que volver a verificar qué botones se pueden
-	  // presionar
-	  selectionStateChanged();
-  }
-  
-  /**
-   * Keeps track of the last copied elements (the ones selected when
-   * Ctrl+C was used).
-   * Creado para cumplir con la solicitud E de la tarea.
-   */
-  public void copy(){
-	  boolean hasSelection = getCurrentEditor().getSelectedElements().size() > 0;
-	  
-	  if(hasSelection)
-	    lastCopiedElements = getCurrentEditor().getSelectedElements();
-	  
-	  //adicionalmente, hay que habilitar el botón PASTE!
-	  menumanager.enableMenuItem("PASTE", hasSelection);
-	  toolbarmanager.enableButton("PASTE", hasSelection);
-  }
-  
-  /**
-   * Pastes into the current diagram the latest elements copied.
-   */
-  public void paste(){
-	getCurrentEditor().pasteElement(lastCopiedElements);
   }
 
   /**

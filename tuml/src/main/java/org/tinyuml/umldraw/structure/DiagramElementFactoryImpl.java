@@ -74,13 +74,13 @@ public class DiagramElementFactoryImpl implements DiagramElementFactory {
     UmlPackage pkg = (UmlPackage) UmlPackage.getPrototype().clone();
     PackageElement pkgPrototype = (PackageElement)
       PackageElement.getPrototype().clone();
-    pkg.setName("Package 1");
+    pkg.setName("Package " + diagram.getcount().getPackageCount());
     pkgPrototype.setUmlPackage(pkg);
     elementPrototypes.put(ElementType.PACKAGE, pkgPrototype);
 
     // add component prototype
     UmlComponent comp = (UmlComponent) UmlComponent.getPrototype().clone();
-    comp.setName("Component 1");
+    comp.setName("Component " + diagram.getcount().getComponentCount());
     ComponentElement compElem = (ComponentElement)
       ComponentElement.getPrototype().clone();
     compElem.setModelElement(comp);
@@ -89,7 +89,7 @@ public class DiagramElementFactoryImpl implements DiagramElementFactory {
 
     // Add class prototype
     UmlClass clss = (UmlClass) UmlClass.getPrototype().clone();
-    clss.setName("Class 1");
+    clss.setName("Class " + diagram.getcount().getClassCount());
     ClassElement classElem = (ClassElement) ClassElement.getPrototype().clone();
     classElem.setModelElement(clss);
     classElem.addNodeChangeListener(diagram);
@@ -152,6 +152,15 @@ public class DiagramElementFactoryImpl implements DiagramElementFactory {
    */
   public UmlNode createNode(ElementType elementType) {
     UmlNode umlnode = (UmlNode) elementPrototypes.get(elementType).clone();
+    if(elementType == ElementType.CLASS) {
+    	diagram.getcount().IncrementClassCount();
+    }
+    if(elementType == ElementType.COMPONENT) {
+    	diagram.getcount().IncrementComponentCount();
+    }
+    if(elementType == ElementType.PACKAGE) {
+    	diagram.getcount().IncrementPackageCount();
+    }
     umlnode.addNodeChangeListener(diagram);
     return umlnode;
   }

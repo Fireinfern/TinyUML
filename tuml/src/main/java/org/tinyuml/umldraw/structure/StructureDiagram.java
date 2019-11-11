@@ -58,12 +58,13 @@ import org.tinyuml.umldraw.shared.DiagramSelection;
  */
 public class StructureDiagram extends AbstractCompositeNode
 implements NodeChangeListener, LabelSource, Diagram {
+	private CountClass count = new CountClass();
 
   private static final long serialVersionUID = -874538211438595440L;
   private static final int ADDITIONAL_SPACE_RIGHT = 30;
   private static final int ADDITIONAL_SPACE_BOTTOM = 30;
 
-  private int gridSize = 5;
+  private int gridSize = 7;
   private String name;
   private List<Connection> connections = new ArrayList<Connection>();
   private Label nameLabel = new SimpleLabel();
@@ -302,23 +303,13 @@ implements NodeChangeListener, LabelSource, Diagram {
    * @param drawingContext the DrawingContext
    */
   private void drawGrid(DrawingContext drawingContext) {
-    // we draw the subgrid before the main grid
-    // (solicitud C)
-    drawSubGrid(drawingContext);
-    
     double drawingGridSize = getDrawGridSize();
-    
-    // Solicitud C: se setea el color desde aquí.
-    Color gridColor = new Color(210, 210, 210);
-    drawingContext.setColor(gridColor);
 
     // Draw vertical lines
     double x1 = getOrigin().getX();
     double x2 = x1 + getSize().getWidth();
     double y1 = getOrigin().getY();
     double y2 = y1 + getSize().getHeight();
-    
-    drawingContext.setColor(gridColor);
 
     // Start at a visible portion
     double x = x1;
@@ -332,42 +323,6 @@ implements NodeChangeListener, LabelSource, Diagram {
     while (y <= y2) {
       drawingContext.drawGridLine(x1, y, x2, y);
       y += drawingGridSize;
-    }
-  }
-  
-  
-  /**
-   * Draws the subgrid lines.
-   * @param drawingContext the DrawingContext
-   */
-  private void drawSubGrid(DrawingContext drawingContext) {
-    double drawingSubGridSize = getDrawGridSize() / 5.0;
-    
-    if(drawingSubGridSize > getDrawGridSize())
-      return; // essentially, we don't want a subgrid greater than its parent's
-    
-    // por ahora dejaremos el color del subgrid en 210
-    Color color = new Color(230, 230, 230);
-    drawingContext.setColor(color);
-
-    // Draw vertical lines
-    double x1 = getOrigin().getX();
-    double x2 = x1 + getSize().getWidth();
-    double y1 = getOrigin().getY();
-    double y2 = y1 + getSize().getHeight();
-
-    // Start at a visible portion
-    double x = x1;
-    while (x <= x2) {
-      drawingContext.drawGridLine(x, y1, x, y2);
-      x += drawingSubGridSize;
-    }
-
-    // Draw horizontal lines
-    double y = y1;
-    while (y <= y2) {
-      drawingContext.drawGridLine(x1, y, x2, y);
-      y += drawingSubGridSize;
     }
   }
 
@@ -542,5 +497,11 @@ implements NodeChangeListener, LabelSource, Diagram {
   @Override
   public void removeNodeChangeListener(NodeChangeListener l) {
     nodeChangeListeners.remove(l);
+  }
+  public CountClass getcount() {
+	  return this.count;
+  }
+  public void setcount(CountClass c) {
+	  this.count = c;
   }
 }

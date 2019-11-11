@@ -90,9 +90,7 @@ public class DrawingContextImplTest extends MockObjectTestCase {
    */
   public void testDrawGridLne() {
     mockG2d.expects(once()).method("setStroke");
-    // cambio por Impacto. Como ahora se puede usar setColor en esta clase
-    // no se espera una llamada a setColor.
-    //mockG2d.expects(once()).method("setColor");
+    mockG2d.expects(once()).method("setColor");
     mockG2d.expects(once()).method("draw");
     drawingContext.drawGridLine(0, 1, 100, 101);
   }

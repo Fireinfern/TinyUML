@@ -137,10 +137,7 @@ public class EditClassDialog extends javax.swing.JDialog {
     for (String methodString : methodStrings) {
       UmlProperty property = (UmlProperty) UmlProperty.getPrototype().clone();
       property.setName(methodString);
-      
-    //cambio solicitud B. Obviamos métodos con longitud nula.
-      if(!methodString.isEmpty())
-      	result.add(property);
+      result.add(property);
     }
     return result;
   }
@@ -156,10 +153,7 @@ public class EditClassDialog extends javax.swing.JDialog {
     for (String attributeString : attributeStrings) {
       UmlProperty property = (UmlProperty) UmlProperty.getPrototype().clone();
       property.setName(attributeString);
-      
-    //cambio solicitud B. Obviamos atributos con longitud nula.
-      if(!attributeString.isEmpty())
-    	  result.add(property);
+      result.add(property);
     }
     return result;
   }
@@ -176,10 +170,7 @@ public class EditClassDialog extends javax.swing.JDialog {
       UmlStereotype stereotype = (UmlStereotype)
         UmlStereotype.getPrototype().clone();
       stereotype.setName(stereoString);
-      
-      //cambio solicitud B. Obviamos estereotipos con longitud nula.
-      if(!stereoString.isEmpty())
-    	  result.add(stereotype);
+      result.add(stereotype);
     }
     return result;
   }
