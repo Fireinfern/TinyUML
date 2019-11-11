@@ -14,6 +14,9 @@ public class CountClass {
 	public void IncrementClassCount(){
 		this.ClassCount += 1;
 	}
+	public void DecrementClassCount(){
+		this.ClassCount -= 1;
+	}
 	public int getPackageCount() {
 		return PackageCount;
 	}
@@ -21,6 +24,9 @@ public class CountClass {
 		PackageCount = packageCount;
 	}
 	public void IncrementPackageCount(){
+		this.PackageCount -= 1;
+	}
+	public void DecrementPackageCount(){
 		this.PackageCount += 1;
 	}
 	public int getComponentCount() {
@@ -31,6 +37,9 @@ public class CountClass {
 	}
 	public void IncrementComponentCount(){
 		this.ComponentCount += 1;
+	}
+	public void DecrementComponentCount(){
+		this.ComponentCount -= 1;
 	}
 	
 	
