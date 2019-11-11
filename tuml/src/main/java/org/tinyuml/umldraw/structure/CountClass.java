@@ -24,10 +24,10 @@ public class CountClass {
 		PackageCount = packageCount;
 	}
 	public void IncrementPackageCount(){
-		this.PackageCount -= 1;
+		this.PackageCount += 1;
 	}
 	public void DecrementPackageCount(){
-		this.PackageCount += 1;
+		this.PackageCount -= 1;
 	}
 	public int getComponentCount() {
 		return ComponentCount;
